@@ -16,6 +16,7 @@ use TYPO3\CMS\Core\Cache\CacheManager;
 use TYPO3\CMS\Core\Cache\Frontend\FrontendInterface;
 use TYPO3\CMS\Core\DataHandling\DataHandler;
 use TYPO3\CMS\Core\Utility\GeneralUtility;
+use TYPO3\CMS\Core\Utility\MathUtility;
 
 /**
  * This is a helper class and a wrapper around "cache_hash".
@@ -43,18 +44,24 @@ class DataHandlerHook
         $this->cachePages = $cachePages ?? GeneralUtility::makeInstance(CacheManager::class)->getCache('cache_pages');
     }
 
-    public function clearMenuCaches(array $params, DataHandler $dataHandler): void
+    /**
+     * @param string $status
+     * @param string $table
+     * @param mixed $id
+     * @param array $fieldArray
+     * @param DataHandler $dataHandler
+     */
+    public function processDatamap_afterDatabaseOperations(string $status, string $table, $id, array $fieldArray, DataHandler $dataHandler): void
     {
-        if ($params['table'] !== 'pages' || empty($params['tags'])) {
-            return;
+        // change tx_container_parent of placeholder if necessary
+        if (
+            $table === 'pages' &&
+            MathUtility::canBeInterpretedAsInteger($id) &&
+            is_array($dataHandler->datamap['pages'])
+        ) {
+            $menuTags = ['menuId_' . $id];
+            $this->cacheHash->flushByTags($menuTags);
+            $this->cachePages->flushByTags($menuTags);
         }
-        $menuTags = [];
-        foreach ($params['tags'] as $tag => $_) {
-            if (strpos($tag, 'pageId_') === 0) {
-                $menuTags[] = str_replace('pageId_', 'menuId_', $tag);
-            }
-        }
-        $this->cacheHash->flushByTags($menuTags);
-        $this->cachePages->flushByTags($menuTags);
     }
 }

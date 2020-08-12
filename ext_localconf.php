@@ -9,5 +9,5 @@ $GLOBALS['TYPO3_CONF_VARS']['FE']['ContentObjects'] = array_merge($GLOBALS['TYPO
     'BREADCRUMBS' => \B13\Menus\ContentObject\BreadcrumbsContentObject::class
 ]);
 
-$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['clearCachePostProc']['tx-menus'] =
-    \B13\Menus\Hooks\DataHandlerHook::class . '->clearMenuCaches';
+$GLOBALS['TYPO3_CONF_VARS']['SC_OPTIONS']['t3lib/class.t3lib_tcemain.php']['processDatamapClass']['tx-menus'] =
+    \B13\Menus\Hooks\DataHandlerHook::class;
