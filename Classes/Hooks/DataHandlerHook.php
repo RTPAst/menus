@@ -25,6 +25,8 @@ use TYPO3\CMS\Core\Utility\GeneralUtility;
  */
 class DataHandlerHook
 {
+    const LIMIT_FOR_FLUSH_PAGE_CACHE = 1000;
+
     /**
      * @var FrontendInterface
      */
@@ -49,12 +51,21 @@ class DataHandlerHook
             return;
         }
         $menuTags = [];
+        $pageCaches = [];
         foreach ($params['tags'] as $tag => $_) {
             if (strpos($tag, 'pageId_') === 0) {
-                $menuTags[] = str_replace('pageId_', 'menuId_', $tag);
+                $menuTag = str_replace('pageId_', 'menuId_', $tag);
+                $pageCaches = array_merge($pageCaches, $this->cachePages->getBackend()->findIdentifiersByTag($menuTag));
+                $menuTags[] = $menuTag;
             }
         }
+        $pageCaches = array_unique($pageCaches);
+
         $this->cacheHash->flushByTags($menuTags);
-        $this->cachePages->flushByTags($menuTags);
+        if (count($pageCaches) > self::LIMIT_FOR_FLUSH_PAGE_CACHE) {
+            $this->cachePages->flush();
+        } else {
+            $this->cachePages->flushByTags($menuTags);
+        }
     }
 }
