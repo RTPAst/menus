@@ -26,6 +26,8 @@ use TYPO3\CMS\Core\Utility\MathUtility;
  */
 class DataHandlerHook
 {
+    private const LIMIT_FOR_FLUSH_PAGE_CACHE = 1000;
+
     /**
      * @var FrontendInterface
      */
@@ -53,15 +55,19 @@ class DataHandlerHook
      */
     public function processDatamap_afterDatabaseOperations(string $status, string $table, $id, array $fieldArray, DataHandler $dataHandler): void
     {
-        // change tx_container_parent of placeholder if necessary
         if (
             $table === 'pages' &&
             MathUtility::canBeInterpretedAsInteger($id) &&
             is_array($dataHandler->datamap['pages'])
         ) {
+            $pageCaches = $this->cachePages->getBackend()->findIdentifiersByTag('menuId_' . $id);
             $menuTags = ['menuId_' . $id];
             $this->cacheHash->flushByTags($menuTags);
-            $this->cachePages->flushByTags($menuTags);
+            if (count($pageCaches) > self::LIMIT_FOR_FLUSH_PAGE_CACHE) {
+                $this->cachePages->flush();
+            } else {
+                $this->cachePages->flushByTags($menuTags);
+            }
         }
     }
 }
