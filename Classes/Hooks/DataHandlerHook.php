@@ -38,8 +38,8 @@ class DataHandlerHook
         FrontendInterface $cacheHash = null,
         FrontendInterface $cachePages = null
     ) {
-        $this->cacheHash = $cacheHash ?? GeneralUtility::makeInstance(CacheManager::class)->getCache('cache_hash');
-        $this->cachePages = $cachePages ?? GeneralUtility::makeInstance(CacheManager::class)->getCache('cache_pages');
+        $this->cacheHash = $cacheHash ?? GeneralUtility::makeInstance(CacheManager::class)->getCache('hash');
+        $this->cachePages = $cachePages ?? GeneralUtility::makeInstance(CacheManager::class)->getCache('pages');
     }
 
     public function clearMenuCaches(array $params, DataHandler $dataHandler): void
